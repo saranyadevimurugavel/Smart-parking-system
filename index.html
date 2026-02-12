@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Smart Parking — Single File Demo</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: Arial, Helvetica, sans-serif; background:#f3f6fb; margin:0; padding:24px; color:#222; }
+    .container { max-width:760px; margin:28px auto; background:#fff; padding:20px; border-radius:10px; box-shadow:0 8px 20px rgba(20,30,60,0.06); }
+    h1 { margin:0 0 12px 0; color:#123a6d; }
+    .form-row { margin-bottom:12px; }
+    label{display:block;margin-bottom:6px;font-weight:600;}
+    input[type=text], input[type=email], input[type=password], input[type=number] { width:100%; padding:10px; border:1px solid #d7e0ef; border-radius:6px; }
+    button.primary { background:#1366d6; color:#fff; border:0; padding:10px 14px; border-radius:8px; cursor:pointer; }
+    .hidden{display:none;}
+    .floors { margin-top:14px; display:flex; gap:12px; flex-wrap:wrap; }
+    .floor { padding:12px; border-radius:8px; border:1px solid #e6eef9; background:#fff; min-width:200px; }
+    .slots { margin-top:8px; display:flex; gap:8px; flex-wrap:wrap; }
+    .slot { padding:8px 10px; border-radius:6px; border:1px solid #dbeefe; cursor:pointer; }
+    .available { background:#ecfdf1; color:#04662f; }
+    .occupied { background:#fff5f6; color:#8b1d2c; cursor:not-allowed; opacity:0.9; }
+    .selected { outline:3px solid rgba(33,115,255,0.12); }
+    .summary { margin-top:14px; padding:10px; border:1px solid #eef3ff; border-radius:8px; background:#fbfdff; }
+  </style>
+</head>
+<body>
+  <div class="container" id="loginView">
+    <h1>Login</h1>
+    <div class="form-row">
+      <label>Name</label>
+      <input id="name" type="text" placeholder="Your name">
+    </div>
+    <div class="form-row">
+      <label>Vehicle Number</label>
+      <input id="vehicle" type="text" placeholder="TN 01 AB 1234">
+    </div>
+    <div class="form-row">
+      <label>Email</label>
+      <input id="email" type="email" placeholder="you@example.com">
+    </div>
+    <div class="form-row">
+      <label>Password</label>
+      <input id="password" type="password" placeholder="password">
+    </div>
+    <div style="text-align:center;">
+      <button class="primary" id="loginBtn">Login / Continue</button>
+    </div>
+    <p style="margin-top:10px;font-size:13px;color:#555;">Open console (F12) to see logs if something doesn't work.</p>
+  </div>
+
+  <div class="container hidden" id="parkingView">
+    <h1>Parking — Choose Slot</h1>
+    <div id="userInfo" class="small"></div>
+
+    <div style="margin-top:10px;">
+      <label>Price per hour (₹)</label>
+      <input id="rate" type="number" value="20" min="1" style="width:120px;">
+      <label style="margin-left:12px;">Hours</label>
+      <input id="hours" type="number" value="1" min="1" style="width:80px;">
+      <button id="logout" style="margin-left:10px;">Logout</button>
+    </div>
+
+    <div class="floors" id="floorsContainer"></div>
+
+    <div class="summary hidden" id="summaryBox">
+      <div><strong>Selected:</strong> <span id="selText">—</span></div>
+      <div><strong>Total:</strong> ₹ <span id="selTotal">0</span></div>
+      <div style="margin-top:8px;">
+        <button class="primary" id="confirmBtn">Confirm Booking</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+  // Demo floors initial data
+  const DEMO_KEY = 'demo_floors_v1';
+  const defaultFloors = [
+    { floorNo:1, slots:[{id:'1A',taken:false},{id:'1B',taken:true},{id:'1C',taken:false}] },
+    { floorNo:2, slots:[{id:'2A',taken:false},{id:'2B',taken:false},{id:'2C',taken:true}] },
+  ];
+  // Save default if not present
+  if(!localStorage.getItem(DEMO_KEY)) localStorage.setItem(DEMO_KEY, JSON.stringify(defaultFloors));
+
+  // Elements
+  const loginView = document.getElementById('loginView');
+  const parkingView = document.getElementById('parkingView');
+  const loginBtn = document.getElementById('loginBtn');
+  const logoutBtn = document.getElementById('logout');
+  const floorsContainer = document.getElementById('floorsContainer');
+  const userInfo = document.getElementById('userInfo');
+  const rateInput = document.getElementById('rate');
+  const hoursInput = document.getElementById('hours');
+  const summaryBox = document.getElementById('summaryBox');
+  const selText = document.getElementById('selText');
+  const selTotal = document.getElementById('selTotal');
+  const confirmBtn = document.getElementById('confirmBtn');
+
+  let selected = null;
+  let user = null;
+
+  // Helper: render floors
+  function renderFloors(){
+    const floors = JSON.parse(localStorage.getItem(DEMO_KEY));
+    floorsContainer.innerHTML = '';
+    floors.forEach((f, fi) => {
+      const div = document.createElement('div');
+      div.className = 'floor';
+      const header = document.createElement('div');
+      header.innerHTML = '<strong>Floor '+f.floorNo+'</strong>';
+      div.appendChild(header);
+      const slots = document.createElement('div'); slots.className='slots';
+      f.slots.forEach((s, si) => {
+        const slot = document.createElement('div');
+        slot.className = 'slot ' + (s.taken ? 'occupied' : 'available');
+        slot.textContent = s.id;
+        if(!s.taken){
+          slot.addEventListener('click', () => {
+            document.querySelectorAll('.slot.selected').forEach(x=>x.classList.remove('selected'));
+            slot.classList.add('selected');
+            selected = { floorIndex: fi, slotIndex: si };
+            updateSummary();
+            console.log('Selected', f.floorNo, s.id);
+          });
+        } else {
+          slot.title = 'Occupied';
+        }
+        slots.appendChild(slot);
+      });
+      div.appendChild(slots);
+      floorsContainer.appendChild(div);
+    });
+  }
+
+  function updateSummary(){
+    if(!selected){ summaryBox.classList.add('hidden'); return; }
+    const floors = JSON.parse(localStorage.getItem(DEMO_KEY));
+    const f = floors[selected.floorIndex];
+    const s = f.slots[selected.slotIndex];
+    selText.textContent = 'Floor ' + f.floorNo + ' - ' + s.id;
+    const total = (Number(rateInput.value)||0) * (Number(hoursInput.value)||1);
+    selTotal.textContent = total.toFixed(2);
+    summaryBox.classList.remove('hidden');
+  }
+
+  // Login click
+  loginBtn.addEventListener('click', () => {
+    const name = document.getElementById('name').value.trim();
+    const vehicle = document.getElementById('vehicle').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const pw = document.getElementById('password').value;
+    if(!name || !vehicle || !email || !pw){
+      alert('Please fill all fields');
+      return;
+    }
+    user = { name, vehicle, email };
+    // Save user to localStorage like your original flow
+    localStorage.setItem('smartparking_user', JSON.stringify(user));
+    console.log('User saved:', user);
+
+    // switch view
+    loginView.classList.add('hidden');
+    parkingView.classList.remove('hidden');
+    userInfo.textContent = name + ' • ' + vehicle + ' • ' + email;
+    renderFloors();
+  });
+
+  logoutBtn.addEventListener('click', () => {
+    localStorage.removeItem('smartparking_user');
+    user = null;
+    // hide parking view, show login
+    parkingView.classList.add('hidden');
+    loginView.classList.remove('hidden');
+    selected = null;
+    summaryBox.classList.add('hidden');
+    console.log('Logged out');
+  });
+
+  confirmBtn.addEventListener('click', () => {
+    if(!selected) return alert('Select a slot first');
+    const floors = JSON.parse(localStorage.getItem(DEMO_KEY));
+    const f = floors[selected.floorIndex];
+    const s = f.slots[selected.slotIndex];
+    // mark taken
+    s.taken = true;
+    localStorage.setItem(DEMO_KEY, JSON.stringify(floors));
+    const booking = {
+      user: JSON.parse(localStorage.getItem('smartparking_user') || '{}'),
+      floor: f.floorNo, slot: s.id,
+      hours: Number(hoursInput.value)||1,
+      rate: Number(rateInput.value)||0,
+      total: ((Number(rateInput.value)||0)*(Number(hoursInput.value)||1)),
+      createdAt: new Date().toISOString()
+    };
+    localStorage.setItem('smartparking_booking', JSON.stringify(booking));
+    alert('Booked '+f.floorNo+'-'+s.id+' Total: ₹'+booking.total.toFixed(2));
+    renderFloors();
+    selected = null;
+    updateSummary();
+  });
+
+  // If a user already logged in (from previous run), show parking immediately
+  const persistedUser = JSON.parse(localStorage.getItem('smartparking_user') || 'null');
+  if(persistedUser){
+    user = persistedUser;
+    loginView.classList.add('hidden');
+    parkingView.classList.remove('hidden');
+    userInfo.textContent = user.name + ' • ' + user.vehicle + ' • ' + user.email;
+    renderFloors();
+  }
+
+  // Debug helper: show errors to console
+  window.addEventListener('error', (e) => {
+    console.error('Runtime error:', e.error || e.message);
+  });
+</script>
+</body>
+</html>

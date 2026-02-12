@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Smart Parking System - Login Form</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+        }
+
+        .container {
+            width: 400px;
+            margin: 60px auto;
+            padding: 25px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px gray;
+        }
+
+        h2 {
+            text-align: center;
+            color: #333;
+        }
+
+        input[type=text], input[type=email], input[type=password] {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background: #0275d8;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #025aa5;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+    <h2>Smart Parking System Login</h2>
+
+    <form action="login.js" method="post">
+        
+        <label>Name</label>
+        <input type="text" name="name" placeholder="Enter Your Name" required>
+
+        <label>Vehicle Number</label>
+        <input type="text" name="vehicleNumber" placeholder="TN 01 AB 1234" required>
+
+        <label>Email ID</label>
+        <input type="email" name="email" placeholder="example@mail.com" required>
+
+        <label>Password</label>
+        <input type="password" name="password" placeholder="Enter Password" required>
+
+        <button type="submit">Login</button>
+    </form>
+</div>
+
+</body>
+</html>

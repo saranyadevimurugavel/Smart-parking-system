@@ -1,0 +1,24 @@
+/* styles.css - shared styles for all pages */
+/* Parking page styles */
+.stats { display:flex; gap:12px; margin-top:12px; flex-wrap:wrap; }
+.stat {
+  background:#f6f9ff; padding:10px 12px; border-radius:8px; border:1px solid #e6f0ff; min-width:140px;
+}
+.floors-wrap { margin-top:16px; display:grid; grid-template-columns: repeat(auto-fit,minmax(260px,1fr)); gap:12px; }
+.floor-card { padding:12px; border-radius:10px; background:#fff; border:1px solid #e9f0ff; }
+.floor-title { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+.slots { display:flex; flex-wrap:wrap; gap:8px; }
+.slot {
+  min-width:60px; padding:10px 8px; text-align:center; border-radius:8px; font-weight:700;
+  border:1px solid #dbeefe; background:#f7fbff; cursor:pointer;
+}
+.slot.available { background:#ecfdf1; border-color:#c8f7cf; color:#04662f; }
+.slot.occupied { background:#fff5f6; border-color:#f3b7be; color:#8b1d2c; cursor:not-allowed; opacity:0.9; }
+.slot.selected { outline:3px solid rgba(33,115,255,0.12); }
+
+/* Summary */
+.summary { margin-top:14px; padding:12px; border-radius:8px; border:1px solid #eef3ff; background:#fbfdff; }
+
+@media (max-width:520px){
+  .stats { flex-direction:column; }
+}

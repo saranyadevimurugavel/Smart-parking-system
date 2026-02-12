@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Smart Parking — Select Slot</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Choose Floor & Slot</h1>
+      <div class="small" id="welcomeText">Welcome —</div>
+    </header>
+
+    <div class="stats" id="globalStats"></div>
+
+    <div style="margin-top:12px;">
+      <label class="small">Price per hour (INR)</label>
+      <input id="rateInput" type="number" min="1" value="20" style="width:110px; padding:8px; border-radius:6px; border:1px solid #d7e0ef;">
+      <label class="small" style="margin-left:12px;">Hours</label>
+      <input id="hoursInput" type="number" min="1" value="1" style="width:80px; padding:8px; border-radius:6px; border:1px solid #d7e0ef; margin-left:6px;">
+      <button class="ghost" id="refreshBtn" style="margin-left:10px;">Refresh</button>
+      <button class="primary" id="logoutBtn" style="margin-left:8px;">Logout</button>
+    </div>
+
+    <div class="floors-wrap" id="floorsWrap"></div>
+
+    <div class="summary" id="selectionSummary" style="display:none;">
+      <div style="display:flex; justify-content:space-between; gap:10px; align-items:center;">
+        <div>
+          <div class="small"><strong>Selected slot</strong></div>
+          <div id="selectedSlotText">—</div>
+        </div>
+        <div style="text-align:right;">
+          <div class="small">Rate/hr</div>
+          <div>₹ <span id="rateDisplay">0</span></div>
+        </div>
+      </div>
+
+      <div style="margin-top:10px; display:flex; justify-content:space-between; align-items:center;">
+        <div class="small">Hours: <span id="hoursDisplay">1</span></div>
+        <div><strong>Total: ₹ <span id="totalDisplay">0</span></strong></div>
+      </div>
+
+      <div style="margin-top:12px;">
+        <button class="primary" id="confirmBtn">Confirm Booking</button>
+        <button class="ghost" id="clearSelectionBtn" style="margin-left:8px;">Clear Selection</button>
+      </div>
+    </div>
+
+    <div style="margin-top:12px;" class="small">Note: This demo uses localStorage. For production use server APIs.</div>
+  </div>
+
+  <script src="parking.js"></script>
+</body>
+</html>
